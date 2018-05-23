@@ -17,28 +17,24 @@
  */
 
 /**
- * 对象值被set修改时的触发函数
- */
-function cb (val) {
-    console.log('update view lalala...', val)
-}
-
-/**
  * 实现对象[响应式]
  * Object.defineProperty(object, propertyname, descriptor) : 作用就是直接在一个对象上定义一个新属性，或者修改一个已经存在的属性，并返回这个对象。
  * 这里要注意的是, 如果打开 writable 属性配置, 无论设置为true or false, 都会抛出异常Invalid property descriptor. Cannot both specify accessors and a value or writable attribute
  * 因为访问器属性(get/set)不能和value/writable属性共存
  */
 function defineReactive (obj, key, val) {
+    const dep = new Dep()
+
     Object.defineProperty(obj, key, {
         enumerable: true, // enumerable是一个布尔值，表示该属性是否可遍历，默认为true。如果设为false，会使得某些操作（比如for...in循环、Object.keys()）跳过该属性
         configurable: true, // 控制了属性描述对象的可写性, 默认为true
         get: function reactiveGetter () {
+            dep.addSub(Dep.target)
             return val
         },
         set: function reactiveSetter (newVal) {
-            if (newVal === val) return
-            cb(newVal)
+            if (newVal === val) return;
+            dep.notify(newVal)
         }
     })
 }
@@ -55,20 +51,58 @@ function observer (obj) {
 }
 
 /**
+ * 订阅者
+ */
+class Dep {
+    constructor () {
+        this.subs = []
+    }
+
+    addSub (sub) {
+        this.subs.push(sub)
+    }
+
+    notify (val) {
+        this.subs.forEach((sub) => {
+            sub.update(val);
+        })
+    }
+}
+
+/**
+ * 观察者
+ */
+class Watcher {
+    constructor () {
+        Dep.target = this
+    }
+
+    update (val) {
+        console.log('update view...', val)
+    }
+}
+
+Dep.target = null
+
+/**
  * 构造函数
  */
 class Mue {
     constructor (options) {
         this._data = options.data
         observer(this._data)
+        new Watcher()
+        console.log('render...', this._data.txt)
     }
 }
 
 
 let test = new Mue({
     data: {
-        txt: 'are u OK?'
+        txt: 'are u OK?',
+        txts: 'two'
     }
 })
 
 test._data.txt = 'I\'m OK!'
+test._data.txts = 'I\'m OK!two'
