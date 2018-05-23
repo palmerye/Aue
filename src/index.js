@@ -29,7 +29,7 @@ function defineReactive (obj, key, val) {
         enumerable: true, // enumerable是一个布尔值，表示该属性是否可遍历，默认为true。如果设为false，会使得某些操作（比如for...in循环、Object.keys()）跳过该属性
         configurable: true, // 控制了属性描述对象的可写性, 默认为true
         get: function reactiveGetter () {
-            dep.addSub(Dep.target)
+            dep.addSub(Dep.target) // 如果该属性没有被读取, 则在dep中不会增加订阅该属性的订阅watch, 所以当它被修改时, 也不会触发update
             return val
         },
         set: function reactiveSetter (newVal) {
