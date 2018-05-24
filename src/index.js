@@ -82,8 +82,6 @@ class Watcher {
     }
 }
 
-Dep.target = null
-
 /**
  * 构造函数
  */
@@ -96,6 +94,7 @@ class Mue {
     }
 }
 
+Dep.target = null
 
 let test = new Mue({
     data: {
